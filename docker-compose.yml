@@ -1,0 +1,48 @@
+services:
+  minio:
+    image: ${MINIO_IMAGE}
+    container_name: minio
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      # Credenziali amministrative MinIO.
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+
+      # Opzioni funzionali e di esposizione.
+      MINIO_REGION_NAME: ${MINIO_REGION_NAME}
+      MINIO_SERVER_URL: ${MINIO_SERVER_URL}
+      MINIO_BROWSER_REDIRECT_URL: ${MINIO_BROWSER_REDIRECT_URL}
+      MINIO_BROWSER_REDIRECT: ${MINIO_BROWSER_REDIRECT}
+      MINIO_BROWSER: ${MINIO_BROWSER}
+      MINIO_BROWSER_LOGIN_ANIMATION: ${MINIO_BROWSER_LOGIN_ANIMATION}
+      MINIO_BROWSER_SESSION_DURATION: ${MINIO_BROWSER_SESSION_DURATION}
+      MINIO_PROMETHEUS_AUTH_TYPE: ${MINIO_PROMETHEUS_AUTH_TYPE}
+      MINIO_DOMAIN: ${MINIO_DOMAIN}
+      TZ: ${TZ}
+      MINIO_DATA_DIR: ${MINIO_DATA_DIR}
+    entrypoint: ["/bin/sh", "/opt/minio-setup/scripts/docker-entrypoint.sh"]
+    ports:
+      # Bind parametrico: 127.0.0.1 per default sicuro; 0.0.0.0 se vuoi esposizione diretta.
+      - "${MINIO_API_BIND_IP}:${MINIO_API_HOST_PORT}:9000"
+      - "${MINIO_CONSOLE_BIND_IP}:${MINIO_CONSOLE_HOST_PORT}:9001"
+    volumes:
+      # Dati persistenti MinIO.
+      - ${DATA_DIR}:${MINIO_DATA_DIR}
+      # Entrypoint custom per non esportare variabili opzionali vuote.
+      - ./scripts:/opt/minio-setup/scripts:ro
+
+  mc:
+    image: ${MC_IMAGE}
+    profiles: ["tools"]
+    env_file:
+      - .env
+    working_dir: /opt/minio-setup
+    volumes:
+      - ./scripts:/opt/minio-setup/scripts:ro
+      - ./init:/opt/minio-setup/init:ro
+    entrypoint: ["/bin/sh", "-c"]
+    command: ["sleep infinity"]
+    depends_on:
+      - minio
