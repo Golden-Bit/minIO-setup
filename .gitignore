@@ -1,0 +1,23 @@
+# Secrets
+.env
+
+# Runtime data
+backups/*.tar.gz
+backups/*.tgz
+backups/*.tmp
+backups/*.bak
+
+# Ignore actual object storage data, keep placeholder only
+data/*
+!data/.gitkeep
+
+# Optional certificates / private keys if added later
+certs/*
+!certs/.gitkeep
+
+# Editor / OS
+.DS_Store
+*.swp
+*.swo
+.vscode/
+.idea/
